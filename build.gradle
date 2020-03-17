@@ -1,0 +1,331 @@
+import org.gradle.internal.os.OperatingSystem
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://repo.spring.io/plugins-release" }
+    }
+    dependencies {
+        //jhipster-needle-gradle-buildscript-dependency - JHipster will add additional gradle build script plugins here
+    }
+}
+
+plugins {
+    id "java"
+    id "maven-publish"
+    id "idea"
+    id "jacoco"
+    id "org.springframework.boot"
+    id "com.google.cloud.tools.jib"
+    id "com.gorylenko.gradle-git-properties"
+    id "net.ltgt.apt-eclipse"
+    id "net.ltgt.apt-idea"
+    id "net.ltgt.apt"
+    id "org.sonarqube"
+    id "io.spring.nohttp"
+    id "com.github.spotbugs"
+    id "war"
+    id "pmd"
+    //jhipster-needle-gradle-plugins - JHipster will add additional gradle plugins here
+}
+
+group = "com.icthh.xm.gate"
+
+description = ""
+
+sourceCompatibility=11
+targetCompatibility=11
+assert System.properties["java.specification.version"] == "11" || "12" || "13"
+
+apply from: "gradle/docker.gradle"
+apply from: "gradle/sonar.gradle"
+//jhipster-needle-gradle-apply-from - JHipster will add additional gradle scripts to be applied here
+
+if (project.hasProperty("prod")) {
+    apply from: "gradle/profile_prod.gradle"
+} else {
+    apply from: "gradle/profile_dev.gradle"
+}
+
+if (project.hasProperty("war")) {
+    apply from: "gradle/war.gradle"
+}
+
+if (project.hasProperty("zipkin")) {
+    apply from: "gradle/zipkin.gradle"
+}
+
+idea {
+    module {
+        excludeDirs += files("node_modules")
+    }
+}
+
+eclipse {
+    sourceSets {
+        main {
+            java {
+                srcDirs += ["build/generated/sources/annotationProcessor/java/main"]
+            }
+        }
+    }
+}
+
+// See https://virgo47.wordpress.com/2018/09/14/classpath-too-long-with-spring-boot-and-gradle/ for details
+// https://github.com/jhipster/generator-jhipster/issues/9713
+if (OperatingSystem.current().isWindows()) {
+    task classpathJar(type: Jar) {
+        inputs.files sourceSets.main.runtimeClasspath
+
+        archiveFileName = "runboot-classpath.jar"
+        doFirst {
+            manifest {
+                def classpath = sourceSets.main.runtimeClasspath.files
+                attributes "Class-Path": classpath.collect {f -> f.toURI().toString()}.join(" ")
+            }
+        }
+    }
+
+    bootRun {
+        classpath = classpathJar.outputs.files
+    }
+}
+
+defaultTasks "bootRun"
+
+bootWar {
+    mainClassName = 'com.icthh.xm.gate.GateApp'
+    manifest {
+        attributes(
+            "Implementation-Version": archiveVersion
+        )
+    }
+}
+
+springBoot {
+    mainClassName = "com.icthh.xm.gate.GateApp"
+}
+
+test {
+    systemProperty "spring.profiles.active", "test"
+    include '**/*UnitTest*'
+    include '**/*IntTest*'
+
+    // uncomment if the tests reports are not generated
+    // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
+    // ignoreFailures true
+    reports.html.enabled = false
+    testLogging {
+        exceptionFormat = 'full'
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+}
+
+task cucumberTest(type: Test) {
+    description = "Execute cucumber BDD tests."
+    group = "verification"
+    include "**/*CucumberIT*"
+
+    // uncomment if the tests reports are not generated
+    // see https://github.com/jhipster/generator-jhipster/pull/2771 and https://github.com/jhipster/generator-jhipster/pull/4484
+    // ignoreFailures true
+    reports.html.enabled = false
+}
+
+check.dependsOn cucumberTest
+
+task testReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn test
+}
+
+task cucumberTestReport(type: TestReport) {
+    destinationDir = file("$buildDir/reports/tests")
+    reportOn cucumberTest
+}
+
+checkstyle {
+    toolVersion = "7.6.1"
+    ignoreFailures = true
+    configFile = rootProject.file('./qa/checkstyle.xml')
+}
+nohttp {
+    source.include "build.gradle", "README.md"
+}
+
+configurations {
+    providedRuntime
+    implementation.exclude module: "spring-boot-starter-tomcat"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+    //jhipster-needle-gradle-repositories - JHipster will add additional repositories
+}
+
+dependencies {
+    // import JHipster dependencies BOM
+    implementation platform("io.github.jhipster:jhipster-dependencies:${jhipster_dependencies_version}" )
+
+    // Use ", version: jhipster_dependencies_version, changing: true" if you want
+    // to use a SNAPSHOT release instead of a stable release
+    implementation "org.projectlombok:lombok:${lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${lombok_version}"
+    implementation group: "io.github.jhipster", name: "jhipster-framework"
+    implementation "io.dropwizard.metrics:metrics-core"
+    implementation "io.dropwizard.metrics:metrics-json"
+    implementation "io.dropwizard.metrics:metrics-jvm"
+    implementation "io.dropwizard.metrics:metrics-servlet"
+    implementation "io.dropwizard.metrics:metrics-servlets"
+    implementation "io.micrometer:micrometer-registry-prometheus"
+    implementation "net.logstash.logback:logstash-logback-encoder"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-hppc"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.module:jackson-module-afterburner"
+    implementation "com.ryantenney.metrics:metrics-spring"
+    implementation "javax.cache:cache-api"
+    implementation "commons-codec:commons-codec"
+    implementation "org.apache.commons:commons-lang3"
+    implementation "commons-io:commons-io"
+    implementation "javax.transaction:javax.transaction-api"
+    implementation "org.springframework.boot:spring-boot-loader-tools"
+    implementation "org.springframework.boot:spring-boot-starter-mail"
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-aop"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation ("org.springframework.boot:spring-boot-starter-web") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    implementation "org.springframework.boot:spring-boot-starter-cache"
+    implementation "org.springframework.boot:spring-boot-starter-undertow"
+    implementation "org.springframework.boot:spring-boot-starter-websocket"
+    implementation "org.springframework.boot:spring-boot-starter-thymeleaf"
+    implementation "com.google.guava:guava:27.0.1-jre"
+    implementation "org.zalando:problem-spring-web"
+    implementation "org.springframework.cloud:spring-cloud-starter-netflix-zuul"
+    implementation "com.github.vladimir-bukhtoyarov:bucket4j-core"
+    implementation "com.github.vladimir-bukhtoyarov:bucket4j-jcache"
+    implementation "org.springframework.cloud:spring-cloud-starter"
+    implementation "org.springframework.cloud:spring-cloud-starter-netflix-ribbon"
+    implementation "org.springframework.cloud:spring-cloud-starter-netflix-hystrix"
+    implementation "org.springframework.retry:spring-retry"
+    implementation "org.springframework.cloud:spring-cloud-starter-consul-discovery"
+    implementation "org.springframework.cloud:spring-cloud-starter-consul-config"
+    implementation "org.springframework.cloud:spring-cloud-security"
+    implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
+    implementation "org.springframework.boot:spring-boot-starter-cloud-connectors"
+    implementation "org.springframework.security:spring-security-config"
+    implementation "org.springframework.security:spring-security-data"
+    implementation "org.springframework.security:spring-security-web"
+    implementation "org.springframework.security:spring-security-messaging"
+    implementation "org.springframework.security.oauth:spring-security-oauth2"
+    implementation "org.springframework.security:spring-security-jwt"
+    implementation ("io.springfox:springfox-swagger2") {
+        exclude module: "mapstruct"
+    }
+    implementation "io.springfox:springfox-bean-validators"
+    implementation "org.mapstruct:mapstruct:${mapstruct_version}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstruct_version}"
+    implementation "org.apache.httpcomponents:httpclient"
+    implementation "com.hazelcast:hazelcast-spring"
+    implementation "org.springframework.social:spring-social-security:${spring_social_security_version}"
+    implementation "org.springframework.social:spring-social-google:${spring_social_google_version}"
+    implementation "org.springframework.social:spring-social-facebook:${spring_social_facebook_version}"
+    implementation "org.springframework.social:spring-social-twitter:${spring_social_google_version}"
+    implementation "io.github.openfeign:feign-jackson"
+    annotationProcessor ("org.springframework.boot:spring-boot-configuration-processor:${spring_boot_version}") {
+        exclude group: "com.vaadin.external.google", module: "android-json"
+    }
+    testImplementation "com.jayway.jsonpath:json-path"
+    testImplementation "io.cucumber:cucumber-junit"
+    testImplementation "io.cucumber:cucumber-spring"
+    testImplementation ("org.springframework.boot:spring-boot-starter-test") {
+        exclude module: "junit"
+        exclude group: "com.vaadin.external.google", module: "android-json"
+    }
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "org.springframework.boot:spring-boot-test"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine"
+    testImplementation "com.tngtech.archunit:archunit-junit5-api:${archunit_junit5_version}"
+    testRuntimeOnly "com.tngtech.archunit:archunit-junit5-engine:${archunit_junit5_version}"
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "junit:junit"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.hamcrest:hamcrest-library"
+    testImplementation "com.h2database:h2"
+    testImplementation "org.testcontainers:database-commons"
+    testImplementation "org.testcontainers:kafka"
+    //jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
+    implementation ("com.icthh.xm.commons:xm-commons-ms-web:${xm_commons_version}") {
+        exclude group: "io.github.jhipster", module: "jhipster"
+    }
+    implementation "com.icthh.xm.commons:xm-commons-tenant-endpoint:${xm_commons_version}"
+    implementation "com.icthh.xm.commons:xm-commons-i18n:${xm_commons_version}"
+    implementation "com.icthh.xm.commons:xm-commons-permission:${xm_commons_version}"
+    implementation "com.icthh.xm.commons:xm-commons-metric:${xm_commons_metric_version}"
+
+    testImplementation "org.projectlombok:lombok:${lombok_version}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombok_version}"
+
+    testImplementation "io.advantageous.boon:boon-json:0.6.6"
+}
+
+spotbugs {
+    ignoreFailures = true
+}
+
+pmd {
+    rulePriority = 3
+    toolVersion = '5.5.4'
+    ignoreFailures = true
+    ruleSetFiles = files("./qa/pmd.xml")
+}
+
+clean {
+    delete "target"
+}
+
+task cleanResources(type: Delete) {
+    delete "build/resources"
+}
+
+wrapper {
+    gradleVersion = "6.0.1"
+}
+
+task stage(dependsOn: 'bootWar') {
+}
+
+
+compileJava.dependsOn processResources
+processResources.dependsOn cleanResources,bootBuildInfo
+bootBuildInfo.mustRunAfter cleanResources
+
+
+task getProjectVersion {
+    doLast {
+        println project.version
+    }
+}
+
+task incrementProjectVersion {
+    doLast{
+        Properties props = new Properties()
+        File propsFile = new File('gradle.properties')
+        props.load(propsFile.newDataInputStream())
+        String version = props.getProperty("version")
+        println "old version: " + version
+        String newVersion = version.tokenize(".")[0].toString() + "." + version.tokenize(".")[1].toString() + "." + (version.tokenize(".")[2].toInteger() + 1).toString()
+        println "new version: " + newVersion 
+        props.setProperty("version", newVersion)
+        props.store(propsFile.newWriter(), null)
+
+    }
+}
