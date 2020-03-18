@@ -23,7 +23,7 @@ jobs:
 
     - name: Build with Gradle
       run: |
-        git branch
+        git checkout ${{ GITHUB_HEAD_REF }}
         ./gradlew incrementProjectVersion
         env
     
@@ -33,7 +33,7 @@ jobs:
         git config --local user.name "GitHub Action"
         git commit -m "autoincrement project version" -a
     - name: Push changes
-      uses: ad-m/github-push-action@master
+      uses: ad-m/github-push-action@${{ GITHUB_HEAD_REF }}
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
   
