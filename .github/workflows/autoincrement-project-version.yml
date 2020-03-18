@@ -23,7 +23,6 @@ jobs:
 
     - name: Build with Gradle
       run: |
-        git --help
         pwd
         ls -la 
         git checkout action
