@@ -22,7 +22,9 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Gradle
-      run: ./gradlew incrementProjectVersion
+      run: |
+        ./gradlew incrementProjectVersion --no-daemon
+        git fetch origin action
     
     - name: Commit files
       run: |
