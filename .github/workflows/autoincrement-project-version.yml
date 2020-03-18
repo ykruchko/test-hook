@@ -25,6 +25,7 @@ jobs:
       run: |
         env
         git checkout -b action
+        git branch
         ./gradlew incrementProjectVersion --no-daemon
         env
     - name: Commit files
@@ -32,6 +33,7 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git commit -m "autoincrement project version" -a
+        git branch
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
