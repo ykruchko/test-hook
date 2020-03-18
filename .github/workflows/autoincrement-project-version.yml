@@ -22,10 +22,7 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Gradle
-      run: |
-        env
-        git checkout -b action
-        ./gradlew incrementProjectVersion
+      run: ./gradlew incrementProjectVersion
     
     - name: Commit files
       run: |
@@ -36,4 +33,4 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-  
+        branch: $GITHUB_HEAD_REF
