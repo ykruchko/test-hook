@@ -23,11 +23,9 @@ jobs:
 
     - name: Build with Gradle
       run: |
-        pwd
-        ls -la 
+        env
         git checkout -b action
         ./gradlew incrementProjectVersion
-        env
     
     - name: Commit files
       run: |
