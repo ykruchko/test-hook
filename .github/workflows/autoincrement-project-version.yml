@@ -23,7 +23,8 @@ jobs:
 
     - name: Build with Gradle
       run: |
-        pwd 
+        git --help
+        pwd
         ls -la 
         git checkout $GITHUB_HEAD_REF
         ./gradlew incrementProjectVersion
