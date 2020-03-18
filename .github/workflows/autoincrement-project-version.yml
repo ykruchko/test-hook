@@ -4,7 +4,7 @@
 name: Autoincrement project version
 on: 
   pull_request:
-#    types: [opened]
+    types: [opened]
     branches:
       - master
 
@@ -25,7 +25,7 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Build with Gradle
+    - name: Increment Project Version
       run: |
         ./gradlew incrementProjectVersion --no-daemon
     - name: Commit files
