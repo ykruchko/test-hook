@@ -25,7 +25,6 @@ jobs:
       run: |
         pwd
         ls -la 
-        git pull
         git checkout -b action
         ./gradlew incrementProjectVersion
         env
