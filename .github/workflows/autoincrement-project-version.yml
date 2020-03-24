@@ -29,7 +29,7 @@ jobs:
       env:
         test: ${{ toJson(github) }}
       run: |
-        echo ${{ test }}
+        echo "$test"
         env
         exit 1
         ./gradlew incrementProjectVersion --no-daemon
