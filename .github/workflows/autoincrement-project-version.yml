@@ -27,8 +27,8 @@ jobs:
 
     - name: Increment Project Version
       env:
-        event: ${{ github.action }}
-        event_label_name: ${{ github.action.label.name }}
+        event: ${{ github.event.action }}
+        event_label_name: ${{ github.event.label.name }}
       run: |
         if [ "$event" == "opened" ] || ([ "$event" == "unlabeled" ] && [ "$event_label_name" == "no_increment_version" ])
         then
