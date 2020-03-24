@@ -37,6 +37,7 @@ jobs:
           ./gradlew incrementProjectVersion --no-daemon
         else
           echo "$event  $event_label_name else"
+          exit 1
         fi
     - name: Commit files
       run: |
