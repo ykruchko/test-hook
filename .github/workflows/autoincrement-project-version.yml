@@ -27,7 +27,7 @@ jobs:
 
     - name: Increment Project Version
       run: |
-        echo ${{ github.event.pull_request.labels }}
+        echo ${{ github.event.pull_request.labels[0].name }}
         env
         exit 1
         ./gradlew incrementProjectVersion --no-daemon
