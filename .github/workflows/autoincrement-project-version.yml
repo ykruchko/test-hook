@@ -27,7 +27,7 @@ jobs:
 
     - name: Increment Project Version
       run: |
-        echo ${{ toJson(github) }}
+        echo ${{ github }}
         env
         exit 1
         ./gradlew incrementProjectVersion --no-daemon
