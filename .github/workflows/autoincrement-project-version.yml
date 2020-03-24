@@ -4,7 +4,7 @@
 name: Autoincrement project version
 on: 
   pull_request:
-    types: [opened,synchronize]
+    types: [opened,labeled,unlabeled]
     branches:
       - master
 
@@ -27,6 +27,8 @@ jobs:
 
     - name: Increment Project Version
       run: |
+        env
+        exit 1
         ./gradlew incrementProjectVersion --no-daemon
     - name: Commit files
       run: |
