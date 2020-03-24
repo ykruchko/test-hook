@@ -329,3 +329,18 @@ task incrementProjectVersion {
 
     }
 }
+
+task decrementProjectVersion {
+    doLast{
+        Properties props = new Properties()
+        File propsFile = new File('gradle.properties')
+        props.load(propsFile.newDataInputStream())
+        String version = props.getProperty("version")
+        println "old version: " + version
+        String newVersion = version.tokenize(".")[0].toString() + "." + version.tokenize(".")[1].toString() + "." + (version.tokenize(".")[2].toInteger() - 1).toString()
+        println "new version: " + newVersion 
+        props.setProperty("version", newVersion)
+        props.store(propsFile.newWriter(), null)
+
+    }
+}
