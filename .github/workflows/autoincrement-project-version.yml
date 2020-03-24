@@ -25,19 +25,16 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Increment Project Version
+    - name: Set Project Version
       env:
         event: ${{ github.event.action }}
         event_label_name: ${{ github.event.label.name }}
       run: |
         if [ "$event" == "opened" ] || ([ "$event" == "unlabeled" ] && [ "$event_label_name" == "no_increment_version" ])
         then
-          echo "$event $event_label_name then"
-          exit 1
           ./gradlew incrementProjectVersion --no-daemon
         else
-          echo "$event  $event_label_name else"
-          exit 1
+          ./gradlew decrementProjectVersion --no-daemon
         fi
     - name: Commit files
       run: |
