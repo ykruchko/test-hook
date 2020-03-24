@@ -26,8 +26,10 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Increment Project Version
+      env:
+        test: ${{ toJson(github) }}
       run: |
-        echo ${{ github }}
+        echo ${{ test }}
         env
         exit 1
         ./gradlew incrementProjectVersion --no-daemon
