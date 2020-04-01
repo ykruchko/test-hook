@@ -32,10 +32,10 @@ jobs:
       run: |
         if [ "$event" == "opened" ] || ([ "$event" == "unlabeled" ] && [ "$event_label_name" == "do_not_increment_version" ])
         then 
-          ./gradlew incrementProjectVersion --no-daemon
+          ./gradlew incrementProjectVersion 
         elif [ "$event" == "labeled" ] && [ "$event_label_name" == "do_not_increment_version" ]
         then
-          ./gradlew decrementProjectVersion --no-daemon
+          ./gradlew decrementProjectVersion 
         fi
     - name: Commit files
       run: |
